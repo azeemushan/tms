@@ -1,0 +1,34 @@
+{{!< studentDashboard}}
+<div class="container">
+  <form
+    method="post"
+    action="/student/feedback/create"
+    class="row g-3 needs-validation"
+    id="updateForm"
+  >
+
+    {{#each feedback.Inputs}}
+      {{! Program }}
+      <div class="col-md-6">
+        <label for="validationCustom04" class="form-label">{{this.Name}}</label>
+        <select
+          class="form-select"
+          name="{{this.Name}}"
+          id="validationCustom04"
+        >
+          <option selected disabled value="">Choose...</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+        <div class="invalid-feedback">
+          Please select a valid Organization.
+        </div>
+      </div>
+    {{/each}}
+    <div class="col-12">
+      <button class="btn btn-primary" type="submit">Submit form</button>
+    </div>
+  </form></div>

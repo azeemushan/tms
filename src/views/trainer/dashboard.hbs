@@ -1,0 +1,32 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trainer Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+    />
+    <link rel="stylesheet" href="/css/trainer/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  </head>
+  <body>
+    <div class="content">
+      <div class="programs-container">
+        {{#each programs}}
+          <a
+            href="/admin/programs/{{this.ProgramID}}"
+            style="text-decoration: none;"
+          >
+            <div class="program-card">
+              <h3>{{this.Name}}</h3>
+              <p>ID: {{this.ProgramID}}</p>
+              <p>Donor: {{this.thirdparty.Name}}</p>
+            </div></a>
+        {{/each}}
+      </div>
+    </div>
+    <script src="/js/trainer/dashboard.js"></script>
+  </body>
+</html>
