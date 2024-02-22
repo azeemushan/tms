@@ -75,12 +75,6 @@ function fetchAndDisplayPrograms() {
         console.log("🚀 ~ programs.forEach ~ program:", program);
       });
     });
-  const dummyPrograms = [
-    { id: 1, name: "Programs", Details: "View Programs feedback" },
-    { id: 2, name: "Sessions", Details: "View sessions feedback" },
-    { id: 3, name: "Trainers", Details: "View Trainers feedback" },
-    { id: 3, name: "Monitors", Details: "View Monitors feedback" },
-  ];
 }
 
 // Call the function to fetch and display programs when the page loads

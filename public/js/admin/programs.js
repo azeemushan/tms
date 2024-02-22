@@ -1,45 +1,30 @@
-// JavaScript code for Programs section (CRUD operations)
+// const deleteButton = document.getElementById("deleteProgram")
 
-// Function to open the modal for adding/editing programs
-function openAddProgramModal() {
-    // Logic to open the modal
-    // You can customize this function based on your modal implementation
+function openModal(id) {
+    console.log("🚀 ~ openModal ~ id:", id)
+    document.getElementById(id).style.display = 'flex';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+function deleteAction(id) {
+    var split = id.split('-');
+    let programID = split[1];
+  
+    fetch('/admin/program/' + programID, {method:'DELETE'})
+      .then((response)=> response.json())
+        .then(()=>{
+          alert("Successfully deleted!");
+          location.reload();
+        })
+    closeModal(id);
 }
 
-// Function to close the modal
-function closeProgramModal() {
-    // Logic to close the modal
-    // You can customize this function based on your modal implementation
-}
 
-// Function to fetch and display programs from the server (demo data)
-function fetchAndDisplayPrograms() {
-    // You can use AJAX or fetch to get program data from the server
-    // For demo purposes, let's create some dummy data
-    const dummyPrograms = [
-        { id: 101, name: 'KPYEP', donor: 'KPITB' },
-        { id: 102, name: 'TrainingX', donor: 'ABC Foundation' },
-        { id: 103, name: 'SkillBoost', donor: 'XYZ Corporation' },
-    ];
-
-    // Display programs in the UI
-    const programsContainer = document.querySelector('.programs-container');
-    programsContainer.innerHTML = '';
-
-    dummyPrograms.forEach(program => {
-        const programCard = document.createElement('div');
-        programCard.classList.add('program-card');
-
-        programCard.innerHTML = `
-            <h3>${program.name}</h3>
-            <p>ID: ${program.id}</p>
-            <p>Donor: ${program.donor}</p>
-            <!-- Add additional details if needed -->
-        `;
-
-        programsContainer.appendChild(programCard);
-    });
-}
-
-// Call the function to fetch and display programs when the page loads
-document.addEventListener('DOMContentLoaded', fetchAndDisplayPrograms);
+  // deleteButton.addEventListener("click",  function(event) {
+//     event.preventDefault() // stops form redirecting to another page on submit
+    
+    
+// });

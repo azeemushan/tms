@@ -47,18 +47,17 @@ export async function login(req, res) {
     // Create a JWT token for the user
     const token = jwt.sign(
       {
-        id: userData.id,
-        email: userData.Email,
-        userType: userData.UserType,
+        ...userData,
+        Password: null,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "1d" }
     );
 
     // Set the JWT token in a cookie
     res.cookie("token", token, {
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // expires in 1 hour
+      maxAge: 24 * 60 * 60 * 1000, // expires in 1 day
     });
 
     // Return the user data

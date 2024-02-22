@@ -2,6 +2,7 @@ import { Router } from "express";
 import { join } from "path";
 
 import { UserType } from "@prisma/client";
+import { hash } from "bcrypt";
 import excelToJson from "convert-excel-to-json";
 import { existsSync, unlinkSync } from "fs";
 import prisma from "../lib/db.js";
@@ -26,39 +27,39 @@ router.post("/create", async (req, res) => {
       },
     });
 
+
+let hashedPassword = await hash(cnic, 10);
     await prisma.users.create({
       data: {
         Username: name,
-        Password: String(cnic),
-        Email: item.email,
+        Password: hashedPassword,
+        Email: email,
         UserType: UserType.STUDENT,
       },
     });
 
     res.redirect("/admin/participants");
   } catch (error) {
+    console.log("🚀 ~ router.post ~ error url='/participant/create'", error)
     res.status(400).json({ error });
   }
 });
 
 router.post("/create-bulk", async (req, res) => {
   const file = req.files.file;
-  console.log("🚀 ~ router.post ~ file:", req.files);
 
   const uploadsDirectory = join(process.cwd(), "public", "uploads");
   console.log(existsSync(uploadsDirectory));
 
   try {
     let filePath = join(uploadsDirectory, file.name);
-    console.log("🚀 ~ router.post ~ filePath:", filePath);
 
     await file.mv(filePath, (err) => {
       if (err) console.log("🚀 ~ file.mv ~ err:", err);
     });
-    console.log("🚀 ~ file.mv ~ file:", "line: 56");
     setTimeout(() => {
       const exists = existsSync(filePath);
-      console.log("🚀 ~ router.post ~ exists:", exists);
+
       if (exists) {
         const result = excelToJson({
           sourceFile: filePath,
@@ -70,9 +71,6 @@ router.post("/create-bulk", async (req, res) => {
           },
           sheets: ["Sheet1"],
         });
-        console.log("🚀 ~ file.mv ~ file:", "line: 68");
-
-        console.log("🚀 ~ router.post ~ result:", result.Sheet1);
 
         result.Sheet1.map(async (item) => {
           await prisma.Participant.create({
@@ -84,11 +82,13 @@ router.post("/create-bulk", async (req, res) => {
               sessionId: +item.session,
             },
           });
+          let hashedPassword = await hash(item.cnic, 10);
           await prisma.users.create({
             data: {
               Username: item.name,
-              Password: String(item.cnic),
+              Password: hashedPassword,
               Email: item.email,
+              SessionID: +item.sessiod,
             },
           });
         });

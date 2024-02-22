@@ -1,19 +1,13 @@
 {{!< dashboard}}
 <div class="container">
-  <form
-    method="post"
-    action="/user/create"
-    class="row g-3 needs-validation"
-    id="updateForm"
-  >
-    <input id="sessionId" type="hidden" value="{{session.SessionID}}" />
+  <div class="row">
     {{! Email }}
     <div class="col-12">
       <label for="validationCustom01" class="form-label">Email</label>
       <input
         type="text"
         name="Email"
-        class="form-control"
+        class="form-control input"
         id="validationCustom01"
         value="{{session.Course}}"
         required
@@ -28,7 +22,7 @@
       <input
         type="password"
         name="Password"
-        class="form-control"
+        class="form-control input"
         id="validationCustom01"
         required
       />
@@ -42,7 +36,7 @@
       <input
         type="text"
         name="Username"
-        class="form-control"
+        class="form-control input"
         id="validationCustom01"
         required
       />
@@ -54,7 +48,7 @@
     <div class="col-md-6">
       <label for="validationCustom04" class="form-label">User Type</label>
       <select
-        class="form-select"
+        class="form-select input"
         name="UserType"
         id="validationCustom04"
         required
@@ -73,7 +67,11 @@
     {{! Program }}
     <div class="col-md-6">
       <label for="validationCustom04" class="form-label">Program</label>
-      <select class="form-select" name="ProgramID" id="validationCustom04">
+      <select
+        class="form-select input"
+        name="ProgramID"
+        id="validationCustom04"
+      >
         <option selected disabled value="">Choose...</option>
         {{#each programs}}
           <option value="{{this.ProgramID}}">{{this.Name}}</option>
@@ -84,8 +82,30 @@
         Please select a valid Organization.
       </div>
     </div>
+    {{! user profile }}
+    <div class="col-md-6">
+      <label for="validationCustom01" class="form-label">Profile Image
+        (optional)</label>
+      <input
+        type="file"
+        name="ProfilePicture"
+        class="form-control fileInput"
+        id="validationCustom01"
+        required
+      />
+      <div class="valid-feedback">
+        Looks good!
+      </div>
+    </div>
 
     <div class="col-12">
-      <button class="btn btn-primary" type="submit">Submit form</button>
+      <button
+        class="btn btn-primary"
+        id="uploadButton"
+        type="button"
+        onclick="createUser();"
+      >Submit form</button>
     </div>
-  </form></div>
+  </div></div>
+
+<script defer src="/js/admin/createUser.js"></script>

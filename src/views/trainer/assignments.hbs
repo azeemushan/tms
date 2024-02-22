@@ -73,22 +73,24 @@
                   href="{{this.FilePath}}"
                 >Download</a></td>
               <td>
-                <form method="post" action="/assignment/mark">
+                <form
+                  method="post"
+                  action="/{{this.SessionID}}/assignment/mark"
+                >
                   <input
                     type="number"
                     class="grade-input"
                     min="0"
-                    max="100"
+                    max="10"
                     step="1"
                     name="Grade"
                     value="{{this.Grade}}"
-                    placeholder="0-100"
+                    placeholder="0-10"
                   />
                   <input
                     type="hidden"
                     value="{{this.AssignmentID}}"
                     name="assignmentID"
-                    placeholder="0-100"
                   />
                 </form>
               </td>
@@ -118,7 +120,7 @@
           </div>
           <div class="modal-body">
             <form
-              action="/assignment/create"
+              action="/{{session.SessionID}}/assignment/create"
               method="post"
               class="row g-3 needs-validation"
               novalidate

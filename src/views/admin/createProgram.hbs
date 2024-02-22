@@ -30,7 +30,7 @@
       >
         <option selected disabled value="">Choose...</option>
         {{#each donors}}
-          <option value="{{this.Name}}">{{this.Name}}</option>
+          <option value="{{this.ThirdPartyID}}">{{this.Name}}</option>
         {{/each}}
       </select>
       <div class="invalid-feedback">
@@ -115,3 +115,5 @@
     </div>
   </form>
 </div>
+
+<script src="/js/admin/createProgram.js"></script>

@@ -5,41 +5,43 @@ const router = Router();
 
 router.post("/create", async (req, res) => {
   const {
-    ProgramID,
     EndDate,
     StartDate,
     Center,
     TrainerID,
     MonitorID,
-    Course,
+    CourseID,
     DeliverablesStatus,
   } = req.body;
 
   try {
     if (
-      !ProgramID &&
       !EndDate &&
       !StartDate &&
       !Center &&
       !TrainerID &&
       !MonitorID &&
-      !Course
+      !CourseID
     ) {
       return res.status(400).json({ error: "Missing fields" });
     }
 
     const startDate = new Date(StartDate).toLocaleDateString();
     const endDate = new Date(EndDate).toLocaleDateString();
-
+    const course = await prisma.course.findFirst({
+      where: {
+        CourseID: +CourseID,
+      },
+    });
     const data = await prisma.trainingsessions.create({
       data: {
-        ProgramID: +ProgramID,
+        ProgramID: +course.ProgramID,
         EndDate: endDate,
         StartDate: startDate,
         Center,
         TrainerID: +TrainerID,
         MonitorID: +MonitorID,
-        Course,
+        CourseID: +CourseID,
         DeliverablesStatus,
       },
     });

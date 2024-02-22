@@ -1,7 +1,7 @@
 import { UserType } from "@prisma/client";
+import { hash } from "bcrypt";
 import { Router } from "express";
 import prisma from "../lib/db.js";
-import { formatDate } from "../lib/util.js";
 const router = Router();
 
 // Routes
@@ -73,109 +73,84 @@ router.get("/programs", async (req, res) => {
 
 router.get("/programs/:id", async (req, res) => {
   try {
-    const data = await prisma.trainingsessions.findMany({
+    const sessions = await prisma.trainingsessions.count({
       where: {
         ProgramID: +req.params.id,
       },
     });
 
-    const donors = await prisma.thirdparties.findMany();
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+    const courses = await prisma.course.count({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+    const trainers = await prisma.users.count({
+      where: {
+        UserType: UserType.TRAINER,
+        ProgramID: req.params.id,
+      },
+    });
+    const participants = await prisma.users.count({
+      where: {
+        UserType: UserType.STUDENT,
+        ProgramID: req.params.id,
+      },
+    });
 
-    let sessions = [];
+    res.render("admin/singleProgram", {
+      sessions,
+      courses,
+      trainers,
+      program,
+      participants,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+router.delete("/program/:id", async (req, res) => {
+  try {
+    const program = await prisma.programs.delete({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
 
-    for (let i = 0; i < data.length; i++) {
-      let value = data[i].EndDate - data[i].StartDate;
-      let days = Math.floor(value / (1000 * 60 * 60 * 24));
-
-      let EndDate = formatDate(data[i].EndDate);
-      let StartDate = formatDate(data[i].StartDate);
-
-      let trainer = await prisma.users.findFirst({
-        where: {
-          UserID: data[i].TrainerID,
-        },
-      });
-
-      let monitor = await prisma.users.findFirst({
-        where: {
-          UserID: data[i].MonitorID,
-        },
-      });
-      let program = await prisma.programs.findFirst({
-        where: {
-          ProgramID: data[i].ProgramID,
-        },
-      });
-
-      const session = {
-        ...data[i],
-        EndDate,
-        StartDate,
-        program: program.Name,
-        Duration: days,
-        trainer: trainer.Username,
-        monitor: monitor.Username,
-      };
-      sessions.push(session);
-    }
-
-    res.render("admin/singleProgram", { sessions, donors });
+    res.status(200).json({ message: "deleted succesfully" });
   } catch (error) {
     res.status(400).json({ error });
   }
 });
 
-router.get("/sessions", async (req, res) => {
+router.get("/programs/:id/sessions", async (req, res) => {
   try {
-    const data = await prisma.trainingsessions.findMany();
-    const programs = await prisma.programs.findMany();
-    const centers = await prisma.centers.findMany();
-    const users = await prisma.users.findMany();
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+    const sessions = await prisma.trainingsessions.findMany({
+      where: {
+        ProgramID: +req.params.id,
+      },
+      include: {
+        course: true,
+        programs: true,
+      },
+    });
 
-    if (!data) return res.status(400).json({ message: "something went wrong" });
-
-    let sessions = [];
-
-    for (let i = 0; i < data.length; i++) {
-      let value = new Date(data[i].EndDate) - new Date(data[i].StartDate);
-
-      let days = Math.floor(value / (1000 * 60 * 60 * 24));
-
-      let EndDate = formatDate(data[i].EndDate);
-      let StartDate = formatDate(data[i].StartDate);
-
-      let trainer = await prisma.users.findFirst({
-        where: {
-          UserID: data[i].TrainerID,
-        },
-      });
-
-      let monitor = await prisma.users.findFirst({
-        where: {
-          UserID: data[i].MonitorID,
-        },
-      });
-      let program = await prisma.programs.findFirst({
-        where: {
-          ProgramID: data[i].ProgramID,
-        },
-      });
-
-      const session = {
-        ...data[i],
-        EndDate,
-        StartDate,
-        program: program.Name,
-        Duration: days,
-        trainer: trainer.Username,
-        monitor: monitor.Username,
-      };
-      sessions.push(session);
-    }
-
-    res.render("admin/sessions", { sessions, programs, users, centers });
+    res.render("admin/sessions", { sessions, program });
   } catch (error) {
-    console.log("🚀 ~ file: adminRouter.js:56 ~ router.get ~ error:", error);
+    console.log("🚀 ~ router.get ~ error:", error);
+    console.log(
+      "🚀 ~ file: adminRouter.js: url=/programs/:id/sessions ~ router.get ~ error:",
+      error
+    );
     res.status(400).json({ error });
   }
 });
@@ -188,7 +163,26 @@ router.get("/organizations", async (req, res) => {
 
     res.render("admin/organizations", { clients: data });
   } catch (error) {
-    console.log("🚀 ~ file: adminRouter.js:56 ~ router.get ~ error:", error);
+    console.log(
+      "🚀 ~ file: adminRouter.js:url=/organizations ~ router.get ~ error:",
+      error
+    );
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/clients", async (req, res) => {
+  try {
+    const data = await prisma.client.findMany();
+
+    if (!data) return res.status(400).json({ message: "something went wrong" });
+
+    res.render("admin/clients", { clients: data });
+  } catch (error) {
+    console.log(
+      "🚀 ~ file: adminRouter.js:url=clients ~ router.get ~ error:",
+      error
+    );
     res.status(400).json({ error });
   }
 });
@@ -231,11 +225,210 @@ router.get("/organization/:id", async (req, res) => {
   }
 });
 
+router.get("/organization/:id/programs", async (req, res) => {
+  try {
+    const organization = await prisma.thirdparties.findFirst({
+      where: {
+        ThirdPartyID: +req.params.id,
+      },
+    });
+    const programs = await prisma.programs.findMany({
+      where: {
+        DonorOrganizationID: +req.params.id,
+      },
+    });
+
+    res.render("admin/organizationPrograms", {
+      programs,
+      organization,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/organization/:id/clients", async (req, res) => {
+  try {
+    const organization = await prisma.thirdparties.findFirst({
+      where: {
+        ThirdPartyID: +req.params.id,
+      },
+    });
+    console.log("🚀 ~ router.get ~ organization:", organization);
+    const clients = await prisma.client.findMany({
+      where: {
+        ThirdPartyID: +req.params.id,
+      },
+      include: {
+        user: true,
+        thirdparty: true,
+      },
+    });
+    console.log("🚀 ~ router.get ~ clients:", clients[0]);
+
+    res.render("admin/organizationClients", {
+      clients,
+      organization,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/programs/:id/courses", async (req, res) => {
+  try {
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+    const courses = await prisma.course.findMany({
+      where: {
+        ProgramID: +req.params.id,
+      },
+      include: {
+        program: true,
+        sessions: true,
+      },
+    });
+    console.log("🚀 ~ router.get ~ courses:", courses);
+
+    res.render("admin/programCourses", {
+      courses,
+      program,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+router.get("/programs/:id/trainers", async (req, res) => {
+  try {
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+    const trainers = await prisma.users.findMany({
+      where: {
+        UserType: UserType.TRAINER,
+        ProgramID: req.params.id,
+      },
+    });
+    console.log("🚀 ~ router.get ~ trainers:", trainers);
+
+    res.render("admin/programTrainers", {
+      trainers,
+      program,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+router.get("/programs/:id/participants", async (req, res) => {
+  try {
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+    const trainers = await prisma.users.findMany({
+      where: {
+        UserType: UserType.STUDENT,
+        ProgramID: req.params.id,
+      },
+    });
+    console.log("🚀 ~ router.get ~ trainers:", trainers);
+
+    res.render("admin/programParticipants", {
+      trainers,
+      program,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/courses/:id", async (req, res) => {
+  try {
+    const course = await prisma.course.findFirst({
+      where: {
+        CourseID: +req.params.id,
+      },
+    });
+    const sessions = await prisma.trainingsessions.findMany({
+      where: {
+        CourseID: +req.params.id,
+      },
+      include: {
+        course: true,
+        programs: true,
+      },
+    });
+    console.log("🚀 ~ router.get ~ sessions:", sessions);
+
+    res.render("admin/singleCourse", {
+      sessions,
+      course,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/clients/create", async (req, res) => {
+  try {
+    const organizations = await prisma.thirdparties.findMany();
+    res.render("admin/createClient", { organizations });
+  } catch (error) {
+    console.log(
+      "🚀 ~ file: adminRouter.js:url=/clients/create ~ router.get ~ error:",
+      error
+    );
+    res.status(400).json({ error });
+  }
+});
+
+router.post("/clients/create", async (req, res) => {
+  const { Username, Password, Email, ThirdPartyID } = req.body;
+
+  try {
+    if (!Username && !Password && !Email && !ThirdPartyID) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    let hashedPassword = await hash(Password, 10);
+
+    const newUser = await prisma.users.create({
+      data: {
+        Username,
+        Password: hashedPassword,
+        Email,
+        UserType: UserType.CLIENT,
+        client: {
+          create: {
+            ThirdPartyID: +ThirdPartyID,
+          },
+        },
+      },
+      include: {
+        client: true,
+      },
+    });
+
+    res.redirect("/admin/dashboard");
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
 router.get("/organizations/create", async (req, res) => {
   try {
     res.render("admin/createOrganization");
   } catch (error) {
-    console.log("🚀 ~ file: adminRouter.js:56 ~ router.get ~ error:", error);
+    console.log(
+      "🚀 ~ file: adminRouter.js:url=/organizations/create ~ router.get ~ error:",
+      error
+    );
     res.status(400).json({ error });
   }
 });
@@ -261,12 +454,38 @@ router.get("/session/update/:id", async (req, res) => {
       centers,
     });
   } catch (error) {
-    console.log("🚀 ~ file: adminRouter.js:56 ~ router.get ~ error:", error);
+    console.log(
+      "🚀 ~ file: adminRouter.js:url=/session/update/:id ~ router.get ~ error:",
+      error
+    );
     res.status(400).json({ error });
   }
 });
 
-router.get("/session/:id", async (req, res) => {
+router.get("/sessions", async (req, res) => {
+  try {
+    const data = await prisma.trainingsessions.findMany({
+      include: {
+        course: true,
+        programs: true,
+      },
+    });
+
+    if (!data) return res.redirect("/admin/dashboard");
+
+    res.render("admin/allSessions", {
+      sessions: data,
+    });
+  } catch (error) {
+    console.log(
+      "🚀 ~ file: adminRouter.js:url=/sessions ~ router.get ~ error:",
+      error
+    );
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/sessions/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const data = await prisma.trainingsessions.findFirst({
@@ -275,13 +494,28 @@ router.get("/session/:id", async (req, res) => {
       },
     });
 
-    const participants = await prisma.Participant.findMany({
+    const participants = await prisma.Participant.count({
       where: {
         sessionId: +id,
       },
     });
 
-    const assignments = await prisma.assignments.findMany({});
+    const assignments = await prisma.assignments.count({
+      where: {
+        SessionID: +id,
+      },
+    });
+
+    const documents = await prisma.documents.count({
+      where: {
+        SessionID: +id,
+      },
+    });
+    const quizes = await prisma.Quiz.count({
+      where: {
+        SessionID: +id,
+      },
+    });
 
     if (!data) return res.redirect("/admin/sessions");
 
@@ -289,20 +523,262 @@ router.get("/session/:id", async (req, res) => {
       session: data,
       participants,
       assignments,
+      documents,
+      quizes,
     });
   } catch (error) {
-    console.log("🚀 ~ file: adminRouter.js:56 ~ router.get ~ error:", error);
+    console.log(
+      "🚀 ~ file: adminRouter.js:url=/sessions/:id ~ router.get ~ error:",
+      error
+    );
     res.status(400).json({ error });
   }
 });
 
-router.get("/sessions/create", async (req, res) => {
+router.get("/session/:id/participants", async (req, res) => {
   try {
-    res.render("admin/createSession");
+    const participants = await prisma.Participant.findMany({
+      where: {
+        sessionId: +req.params.id,
+      },
+    });
+    console.log("🚀 ~ router.get ~ participants:", participants);
+
+    const session = await prisma.trainingsessions.findFirst({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    res.render("admin/sessionParticipants", {
+      participants,
+      session,
+    });
   } catch (error) {
     res.status(400).json({ error });
   }
 });
+
+router.get("/session/:id/assignments", async (req, res) => {
+  try {
+    const data = await prisma.assignments.findMany({
+      where: {
+        SessionID: +req.params.id,
+        isUploadedByTrainer: false,
+      },
+      include: {
+        trainingsessions: true,
+      },
+    });
+
+    let assignments = [];
+    for (let i = 0; i < data.length; i++) {
+      const program = await prisma.programs.findFirst({
+        where: {
+          ProgramID: data[i].trainingsessions.ProgramID,
+        },
+      });
+      assignments.push({ ...data[i], program: program.Name });
+    }
+
+    const session = await prisma.trainingsessions.findFirst({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    res.render("admin/assignments", {
+      assignments,
+      session,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/session/:id/documents", async (req, res) => {
+  try {
+    const documents = await prisma.documents.findMany({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    const session = await prisma.trainingsessions.findFirst({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    res.render("admin/documents", {
+      documents,
+      session,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/session/:id/quizes", async (req, res) => {
+  try {
+    const quizes = await prisma.Quiz.findMany({
+      include: {
+        questions: {
+          include: {
+            options: true,
+          },
+        },
+        SubmittedQuizes: true,
+      },
+    });
+
+    const session = await prisma.trainingsessions.findFirst({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    res.render("admin/quizes", {
+      quizes,
+      session,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/quiz/:id", async (req, res) => {
+  try {
+    let SubmittedQuizes = [];
+    const data = await prisma.Quiz.findUnique({
+      where: { id: +req.params.id },
+      include: {
+        SubmittedQuizes: true,
+      },
+    });
+
+    for (let i = 0; i < data.SubmittedQuizes.length; i++) {
+      const user = await prisma.users.findUnique({
+        where: {
+          UserID: +data.SubmittedQuizes[i].UserID,
+        },
+      });
+      SubmittedQuizes.push({ ...data.SubmittedQuizes[i], user });
+    }
+    console.log("🚀 ~ router.get ~ SubmittedQuizes:", SubmittedQuizes);
+
+    res.render("admin/singleQuiz", {
+      SubmittedQuizes,
+    });
+  } catch (error) {
+    console.log("🚀 ~ router.get ~ error:", error);
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/quiz/:id/create", async (req, res) => {
+  try {
+    res.render("admin/createQuiz", { SessionID: req.params.id });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.post("/quiz/create", async (req, res) => {
+  const { quizData, name, SessionID } = req.body;
+
+  try {
+    // Create Quiz
+    const quiz = await prisma.Quiz.create({
+      data: {
+        name,
+        SessionID: +SessionID,
+        questions: {
+          create: quizData.map((question) => ({
+            question: question.question,
+            answer: question.answer,
+            options: {
+              create: question.options.map((option) => ({
+                value: option,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        questions: {
+          include: {
+            options: true,
+          },
+        },
+      },
+    });
+
+    res.json({ redirectTo: `/admin/session/${SessionID}/quizes` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
+
+router.get("/session/create", async (req, res) => {
+  console.log("🚀 ~ router.get ~ centers: runned");
+  try {
+    const centers = await prisma.centers.findMany();
+    const trainers = await prisma.users.findMany({
+      where: {
+        UserType: UserType.TRAINER,
+      },
+    });
+    const monitors = await prisma.users.findMany({
+      where: {
+        UserType: UserType.MONITOR,
+      },
+    });
+    const courses = await prisma.course.findMany();
+
+    res.render("admin/createSession", { trainers, monitors, centers, courses });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/programs/:id/courses/create", async (req, res) => {
+  try {
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+    res.render("admin/createCourse", { program });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.post("/programs/:id/courses/create", async (req, res) => {
+  try {
+    const { Name } = req.body;
+    const ProgramID = req.params.id;
+    console.log("🚀 ~ router.post ~ ProgramID:");
+    console.log("🚀 ~ router.post ~ ProgramID:", ProgramID);
+    console.log("🚀 ~ router.post ~ Name:", Name);
+    if (!Name && !ProgramID) {
+      return res.status(400).json({ message: "Please Fillout all the fields" });
+    }
+    const data = await prisma.course.create({
+      data: {
+        Name,
+        ProgramID: +ProgramID,
+      },
+    });
+
+    res.redirect(`/admin/programs/${ProgramID}/courses`);
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
 router.get("/participants", async (req, res) => {
   try {
     const data = await prisma.Participant.findMany();
@@ -330,7 +806,17 @@ router.get("/monitors", async (req, res) => {
 
 router.get("/centers", async (req, res) => {
   try {
-    const centers = await prisma.centers.findMany();
+    const data = await prisma.centers.findMany();
+    let centers = [];
+
+    for(let i = 0; i < data.length; i++) {
+      let center = data[i]
+      center.isPublicSector = center.isPublicSector ? "Yes": "No"
+      center.haveComputerLab = center.haveComputerLab ? "Yes": "No"
+
+      centers.push(center)
+    }
+    
 
     res.render("admin/centers", { centers });
   } catch (error) {
@@ -462,7 +948,6 @@ router.get("/user/create", async (req, res) => {
 router.get("/program/create", async (_, res) => {
   try {
     const donors = await prisma.thirdparties.findMany();
-    console.log("🚀 ~ router.get ~ donors:", donors);
 
     res.render("admin/createProgram", { donors });
   } catch (error) {
@@ -471,34 +956,8 @@ router.get("/program/create", async (_, res) => {
 });
 
 router.post("/program/create", async (req, res) => {
-  const {
-    Name,
-    StartDate,
-    EndDate,
-    DonorOrganization,
-    Description,
-    EligibilityCriteria,
-    DocumentRequirements,
-    Age,
-    Category,
-    Education,
-    Gender,
-  } = req.body;
-
-  console.log(
-    "🚀 ~ router.post ~ Name",
-    StartDate,
-    EndDate,
-    DonorOrganization,
-    Description,
-    EligibilityCriteria,
-    DocumentRequirements,
-    Age,
-    Category,
-    Education,
-    Gender,
-    Name
-  );
+  const { Name, StartDate, EndDate, DonorOrganization, Description, Category } =
+    req.body;
 
   try {
     if (
@@ -507,9 +966,7 @@ router.post("/program/create", async (req, res) => {
       !StartDate ||
       !DonorOrganization ||
       !Description ||
-      !EligibilityCriteria ||
-      !DocumentRequirements ||
-      !Age
+      !Category
     ) {
       return res.status(400).json({ error: "Missing fields" });
     }
@@ -523,14 +980,9 @@ router.post("/program/create", async (req, res) => {
         Name,
         EndDate: endDate,
         Startdate: startDate,
-        DonorOrganization,
+        DonorOrganizationID: +DonorOrganization,
         Description,
-        EligibilityCriteria,
-        DocumentRequirements: +DocumentRequirements,
-        Age,
         Category,
-        Education,
-        Gender,
       },
     });
 
@@ -581,8 +1033,99 @@ router.post("/center/create", async (req, res) => {
   }
 });
 
-router.get("/reports", (req, res) => {
-  res.render("admin/reports");
+router.get("/reports", async (_, res) => {
+  try {
+    const programs = await prisma.programs.findMany({
+      include: {
+        thirdparty: true,
+      },
+    });
+    res.render("admin/reports", { programs });
+  } catch (error) {
+    console.log("🚀 ~ router.get ~ error:", error);
+  }
+});
+
+// all reports of a program
+router.get("/reports/:id", async (req, res) => {
+  try {
+    const id = +req.params.id; // Convert to number
+
+    // Use `findFirst` to find a single record
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: id,
+      },
+    });
+
+    console.log("🚀 ~ router.get ~ program:", program);
+
+    if (!program) {
+      throw new Error(`Program with ID ${id} not found`);
+    }
+
+    const reports = await prisma.report.findMany({
+      where: {
+        ProgramID: +id,
+      },
+      include: {
+        SubmitedReports: true,
+      },
+    });
+
+    res.render("admin/programReports", { program, reports });
+  } catch (error) {
+    console.error("🚀 ~ router.get ~ error:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// single report
+router.get("/report/:id", async (req, res) => {
+  try {
+    const id = +req.params.id; // Convert to number
+    const report = await prisma.submitedReport.findMany({
+      where: {
+        ReportID: +id,
+      },
+      include: {
+        report: true,
+      },
+    });
+
+    const mainReport = await prisma.report.findFirst({
+      where: {
+        ReportID: +id,
+      },
+    });
+    console.log("🚀 ~ router.get ~ report:", report, mainReport);
+
+    if (!report) {
+      throw new Error(`Program with ID ${id} not found`);
+    }
+
+    res.render("admin/singleReport", {
+      report,
+      mainReport,
+    });
+  } catch (error) {
+    console.error("🚀 ~ router.get ~ error:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+router.get("/reports/:id/create", async (req, res) => {
+  try {
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +req.params.id,
+      },
+    });
+
+    res.render("admin/createReport", { program });
+  } catch (error) {
+    console.log("🚀 ~ router.get ~ error:", error);
+  }
 });
 
 export default router;

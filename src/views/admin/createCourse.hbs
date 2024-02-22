@@ -1,0 +1,28 @@
+{{!< dashboard}}
+
+<div class="container">
+  <form
+    action="/admin/programs/{{program.ProgramID}}/courses/create"
+    method="post"
+    class="col g-3 needs-validation"
+  >
+    {{! Name }}
+    <div class="col-md-6 mx-auto">
+      <label for="validationCustom02" class="form-label">Name</label>
+      <input
+        type="text"
+        name="Name"
+        class="form-control"
+        id="validationCustom02"
+        required
+      />
+      <div class="valid-feedback">
+        Looks good!
+      </div>
+    </div>
+
+    <div class="col-md-6 mx-auto mt-4">
+      <button class="btn btn-primary" type="submit">Submit form</button>
+    </div>
+  </form>
+</div>

@@ -1,12 +1,14 @@
-import { hash } from "bcrypt";
 import dotenv from "dotenv";
 import express from "express";
 import fileUpload from "express-fileupload";
 import hbs from "express-hbs";
+import fs from "fs";
 import handlebarsEqual from "handlebars-helper-equal";
-import { dirname, resolve } from "path";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
+import { hash } from "bcrypt";
+import cookieParser from "cookie-parser";
 import prisma from "./lib/db.js";
 import adminRouter from "./routes/adminRouter.js";
 import managerRouter from "./routes/managerRouter.js";
@@ -41,7 +43,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 hbs.registerHelper("eq", handlebarsEqual);
-
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
 app.use(express.json());
@@ -78,39 +80,101 @@ app.post("/organization/create", async (req, res) => {
 
   return res.redirect("/admin/organizations");
 });
+
 app.post("/user/create", async (req, res) => {
   const { Email, Password, UserType, Username, ProgramID } = req.body;
-  let hashedPassword = await hash(Password, 10);
-  const created = await prisma.users.create({
-    data: {
-      Email,
-      Password: hashedPassword,
-      UserType,
-      Username,
-      ProgramID,
-    },
-  });
+  const ProfilePicture = req.files?.ProfilePicture;
+  const existingUser = await prisma.users.findFirst({
+    where: {
+      Email
+    }
+  })
+  if (existingUser) {
+    return res.status(400).json({
+      message: "Email already in use",
+      success: false
+    })
+  }
+  
+  const uploadsDirectory = join(
+    process.cwd(),
+    "public",
+    "uploads",
+    "ProfilePicture"
+  );
 
-  return res.redirect("/admin/dashboard");
+  // Create the uploads directory if it doesn't exist
+  if (!fs.existsSync(uploadsDirectory)) {
+    fs.mkdirSync(uploadsDirectory);
+  }
+  try {
+    let hashedPassword = await hash(Password, 10);
+    const created = await prisma.users.create({
+      data: {
+        Email,
+        Password: hashedPassword,
+        UserType,
+        Username,
+        ProgramID,
+      },
+    });
+
+    if (!ProfilePicture) return res.status(201).json({
+      message: "User created successfuly",
+      success: true
+    })
+
+    const userDirectory = join(uploadsDirectory, `${created.UserID}`);
+
+    if (!fs.existsSync(uploadsDirectory)) {
+      fs.mkdirSync(uploadsDirectory, { recursive: true });
+    }
+
+    // Create user directory if it doesn't exist
+    if (!fs.existsSync(userDirectory)) {
+      fs.mkdirSync(userDirectory, { recursive: true });
+    }
+
+    const FilePath = join(userDirectory, ProfilePicture.name);
+    ProfilePicture.mv(FilePath);
+    const path = FilePath.split(process.cwd())[1].replace("\\public", "");
+    const updatedUser = await prisma.users.update({
+      where: {
+        UserID: created.UserID,
+      },
+      data: {
+        ProfilePicture: path,
+      },
+    });
+    return res.status(201).json({
+      message: "User created successfuly",
+      success: true
+    })
+  } catch (error) {
+    console.log("🚀 ~ app.post ~ error:", error);
+  }
 });
-app.post("/assignment/create", async (req, res) => {
+
+app.post("/:id/assignment/create", async (req, res) => {
   const { Title, Deadline } = req.body;
   const deadline = new Date(Deadline).toLocaleDateString();
+  const SessionID = +req.params.id;
   const created = await prisma.assignments.create({
     data: {
       Title,
+      SessionID,
       Deadline: deadline,
       isUploadedByTrainer: true,
     },
   });
 
-  return res.redirect("/trainer/assignments");
+  return res.redirect(`/trainer/${SessionID}/assignments`);
 });
-app.post("/assignment/mark", async (req, res) => {
+
+app.post("/:id/assignment/mark", async (req, res) => {
   try {
     const { Grade, assignmentID } = req.body;
-    console.log("🚀 ~ app.post ~ Grade:", Grade);
-    console.log("🚀 ~ app.post ~ assignmentID:", assignmentID);
+    if (+Grade > 10) Grade = 10;
 
     const created = await prisma.assignments.update({
       where: {
@@ -121,12 +185,29 @@ app.post("/assignment/mark", async (req, res) => {
       },
     });
 
-    return res.redirect("/trainer/assignments");
+    return res.redirect(`/trainer/${req.params.id}/assignments`);
   } catch (error) {
     console.log("🚀 ~ app.post ~ error:", error);
   }
 });
-
+app.get("/quiz", (_, res) => {
+  res.render("quiz");
+});
+app.post("/reports/:id/create", async (req, res) => {
+  const { Name } = req.body;
+  console.log("🚀 ~ router.post ~ Name:", Name);
+  try {
+    const report = await prisma.report.create({
+      data: {
+        Name,
+        ProgramID: +req.params.id,
+      },
+    });
+    res.redirect(`/admin/reports/${req.params.id}`);
+  } catch (error) {
+    console.log("🚀 ~ router.get ~ error:", error);
+  }
+});
 app.get("/", (req, res) => {
   res.redirect("/login");
 });

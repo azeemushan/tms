@@ -1,5 +1,5 @@
 {{!< dashboard}}
-       <style>
+<style>
         .container {
             display: flex;
         }
@@ -12,8 +12,6 @@
         }
 
         table {
-            width: 80%;
-            margin: 50px;
             table-layout: fixed;
             border-collapse: collapse;
         }
@@ -65,9 +63,9 @@
             background-color: white;
             color: #2E5A92;
         }
-    </style>
-        <div class="main-content">
-            <table>
+</style>
+        <div class="container mt-4">
+            <table id="participantTable">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -86,7 +84,7 @@
                       <tr> 
                                 <td>{{this.AssignmentID}}</td>
                                 <td>{{this.ParticipantID}}</td>
-                                <td>{{this.trainingsessions.ProgramID}}</td>
+                                <td>{{this.program}}</td>
                                 <td>{{this.SessionID}}</td>
                                 <td>{{this.Title}}</td>
                                 <td>{{this.Deadline}}</td>
@@ -99,3 +97,7 @@
         </table>
     </div>
 </div>
+
+<script>
+  new DataTable('#participantTable');
+</script>

@@ -28,6 +28,7 @@ function uploadFile(fileInput) {
       formData.append(fileName, file.value);
     }
     formData.append("ParticipantID", user.UserID);
+    formData.append("SessionID", user.SessionID);
 
     fetch("/files/upload/documents", {
       method: "POST",

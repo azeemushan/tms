@@ -1,130 +1,123 @@
 {{!< dashboard}}
 
-<form action="/session/create" method="post" class="row g-3 needs-validation">
-  {{! course }}
-  <div class="col-12">
-    <label for="validationCustom01" class="form-label">Course</label>
-    <input
-      type="text"
-      name="Course"
-      class="form-control"
-      id="validationCustom01"
-      required
-    />
-    <div class="valid-feedback">
-      Looks good!
+<div class="container">
+  <form action="/session/create" method="post" class="row g-3 needs-validation">
+    {{! course }}
+    <div class="col-md-6">
+      <label for="validationCustom04" class="form-label">Course</label>
+      <select
+        class="form-select"
+        name="CourseID"
+        id="validationCustom04"
+        required
+      >
+        <option selected disabled value="">Choose...</option>
+        {{#each courses}}
+          <option value="{{this.CourseID}}">{{this.Name}}</option>
+        {{/each}}
+      </select>
+      <div class="invalid-feedback">
+        Please select a valid Organization.
+      </div>
     </div>
-  </div>
-  {{! program }}
-  <div class="col-md-6">
-    <label for="validationCustom04" class="form-label">Program</label>
-    <select
-      class="form-select"
-      name="ProgramID"
-      id="validationCustom04"
-      required
-    >
-      <option selected disabled value="">Choose...</option>
-      {{#each programs}}
-        <option value="{{this.ProgramID}}">{{this.Name}}</option>
-      {{/each}}
-    </select>
-    <div class="invalid-feedback">
-      Please select a valid Organization.
+    {{! center }}
+    <div class="col-md-6">
+      <label for="validationCustom04" class="form-label">Center</label>
+      <select
+        class="form-select"
+        name="Center"
+        id="validationCustom04"
+        required
+      >
+        <option selected disabled value="">Choose...</option>
+        {{#each centers}}
+          <option value="{{this.Name}}">{{this.Name}}</option>
+        {{/each}}
+      </select>
+      <div class="invalid-feedback">
+        Please select a valid Organization.
+      </div>
     </div>
-  </div>
-  {{! center }}
-  <div class="col-md-6">
-    <label for="validationCustom04" class="form-label">Center</label>
-    <select class="form-select" name="Center" id="validationCustom04" required>
-      <option selected disabled value="">Choose...</option>
-      {{#each centers}}
-        <option value="{{this.Name}}">{{this.Name}}</option>
-      {{/each}}
-    </select>
-    <div class="invalid-feedback">
-      Please select a valid Organization.
+    {{! start date }}
+    <div class="col-md-6">
+      <label for="validationCustom02" class="form-label">Start Date</label>
+      <input
+        type="date"
+        name="StartDate"
+        class="form-control"
+        id="validationCustom02"
+        required
+      />
+      <div class="valid-feedback">
+        Looks good!
+      </div>
     </div>
-  </div>
-  {{! start date }}
-  <div class="col-md-6">
-    <label for="validationCustom02" class="form-label">Start Date</label>
-    <input
-      type="date"
-      name="StartDate"
-      class="form-control"
-      id="validationCustom02"
-      required
-    />
-    <div class="valid-feedback">
-      Looks good!
+    {{! end date }}
+    <div class="col-md-6">
+      <label for="validationCustom02" class="form-label">End Date</label>
+      <input
+        type="date"
+        name="EndDate"
+        class="form-control"
+        id="validationCustom02"
+        required
+      />
+      <div class="valid-feedback">
+        Looks good!
+      </div>
     </div>
-  </div>
-  {{! end date }}
-  <div class="col-md-6">
-    <label for="validationCustom02" class="form-label">End Date</label>
-    <input
-      type="date"
-      name="EndDate"
-      class="form-control"
-      id="validationCustom02"
-      required
-    />
-    <div class="valid-feedback">
-      Looks good!
+    {{! trainer }}
+    <div class="col-md-6">
+      <label for="validationCustom04" class="form-label">Trainer</label>
+      <select
+        class="form-select"
+        name="TrainerID"
+        id="validationCustom04"
+        required
+      >
+        <option selected disabled value="">Choose...</option>
+        {{#each trainers}}
+          <option value="{{this.UserID}}">{{this.Username}}</option>
+        {{/each}}
+      </select>
+      <div class="invalid-feedback">
+        Please select a Trainer
+      </div>
     </div>
-  </div>
-  {{! trainer }}
-  <div class="col-md-6">
-    <label for="validationCustom04" class="form-label">Trainer</label>
-    <select
-      class="form-select"
-      name="TrainerID"
-      id="validationCustom04"
-      required
-    >
-      <option selected disabled value="">Choose...</option>
-      {{#each users}}
-        <option value="{{this.UserID}}">{{this.Username}}</option>
-      {{/each}}
-    </select>
-    <div class="invalid-feedback">
-      Please select a Trainer
+    {{! Monitor }}
+    <div class="col-md-6">
+      <label for="validationCustom04" class="form-label">Monitor</label>
+      <select
+        class="form-select"
+        name="MonitorID"
+        id="validationCustom04"
+        required
+      >
+        <option selected disabled value="">Choose...</option>
+        {{#each monitors}}
+          <option value="{{this.UserID}}">{{this.Username}}</option>
+        {{/each}}
+      </select>
+      <div class="invalid-feedback">
+        Please select a Monitor
+      </div>
     </div>
-  </div>
-  {{! Monitor }}
-  <div class="col-md-6">
-    <label for="validationCustom04" class="form-label">Monitor</label>
-    <select
-      class="form-select"
-      name="MonitorID"
-      id="validationCustom04"
-      required
-    >
-      <option selected disabled value="">Choose...</option>
-      {{#each users}}
-        <option value="{{this.UserID}}">{{this.Username}}</option>
-      {{/each}}
-    </select>
-    <div class="invalid-feedback">
-      Please select a Monitor
-    </div>
-  </div>
 
-  <div class="col-12">
-    <label for="validationCustom03" class="form-label">Deliverable Status</label>
-    <input
-      type="text"
-      name="DeliverablesStatus"
-      class="form-control"
-      id="validationCustom03"
-    />
-    <div class="invalid-feedback">
-      Please provide a valid Crieteria.
+    <div class="col-12">
+      <label for="validationCustom03" class="form-label">Deliverable Status</label>
+      <input
+        type="text"
+        name="DeliverablesStatus"
+        class="form-control"
+        id="validationCustom03"
+      />
+      <div class="invalid-feedback">
+        Please provide a valid Crieteria.
+      </div>
     </div>
-  </div>
 
-  <div class="col-12">
-    <button class="btn btn-primary" type="submit">Submit form</button>
-  </div>
-</form>
+    <div class="col-12">
+      <button class="btn btn-primary" type="submit">Submit form</button>
+    </div>
+  </form>
+</div>

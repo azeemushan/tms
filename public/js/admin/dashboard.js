@@ -37,6 +37,33 @@ fetch("/admin/dashboard/data")
     });
 
     // program overview
+    const gendersOverviewData = {
+      labels: ["Trainers", "Students", "Sessions"],
+      datasets: [
+        {
+          data: [
+            programOverviewTrainers,
+            programOverviewStudents,
+            programOverviewSessions,
+          ],
+          backgroundColor: [
+            "rgba(75, 192, 192, 0.5)",
+            "rgba(255, 99, 132, 0.5)",
+            "rgba(255, 205, 86, 0.5)",
+          ],
+          hoverOffset: 4,
+        },
+      ],
+    };
+
+    const gendersOverviewCtx = document
+      .getElementById("gendersChart")
+      .getContext("2d");
+    const gendersOverviewChart = new Chart(gendersOverviewCtx, {
+      type: "pie",
+      data: gendersOverviewData,
+    });
+    // program overview
     const programOverviewData = {
       labels: ["Trainers", "Students", "Sessions"],
       datasets: [
@@ -83,7 +110,7 @@ fetch("/admin/dashboard/data")
       .getElementById("trainersChart")
       .getContext("2d");
     const trainersChart = new Chart(trainersCtx, {
-      type: "bar",
+      type: "pie",
       data: thematicAreaData,
       options: {
         scales: {

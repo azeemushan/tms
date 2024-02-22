@@ -24,7 +24,7 @@ router.post("/upload", async (req, res) => {
 
   const session = await prisma.trainingsessions.findFirst({
     where: {
-      DeliverablesStatus: "active",
+      DeliverablesStatus: "pending",
     },
   });
 
@@ -77,21 +77,13 @@ router.post("/upload", async (req, res) => {
 });
 
 router.post("/upload/documents", async (req, res) => {
-  const { ParticipantID } = req.body;
+  const { ParticipantID, SessionID } = req.body;
 
   if (!ParticipantID) {
     return res
       .status(400)
       .json({ error: "Missing properties in request body" });
   }
-
-  const session = await prisma.trainingsessions.findFirst({
-    where: {
-      DeliverablesStatus: "active",
-    },
-  });
-
-  const SessionID = session?.SessionID;
 
   // Get the file from the request
   const files = req.files;
@@ -118,10 +110,13 @@ router.post("/upload/documents", async (req, res) => {
     if (!fs.existsSync(userDirectory)) {
       fs.mkdirSync(userDirectory, { recursive: true });
     }
+    const profilePicture = files?.picture ? files?.picture : null;
 
     const keys = Object.keys(files);
+
     let allFiles = [];
     for (let i = 0; i < keys.length; i++) {
+      // if key is qual to "picture" then store it as a profile picture
       let value = files[`${keys[i]}`];
       allFiles.push(value);
     }
@@ -139,6 +134,17 @@ router.post("/upload/documents", async (req, res) => {
           DocumentType: file.mimetype,
         },
       });
+
+      if (file.name === profilePicture.name) {
+        await prisma.users.update({
+          where: {
+            UserID: +ParticipantID,
+          },
+          data: {
+            ProfilePicture: path,
+          },
+        });
+      }
     }
 
     res.json({ redirectTo: "/student/dashboard" });
