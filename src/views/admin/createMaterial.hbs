@@ -1,0 +1,17 @@
+{{!< dashboard}} <div class="container">
+  <form action="/admin/program/create" method="post" class="row g-3 needs-validation" novalidate>
+    <div class="col-md-6">
+      <label for="validationCustom01" class="form-label">File</label>
+      <input type="file" name="File" class="form-control" id="validationCustom01" required />
+      <div class="valid-feedback">
+        Looks good!
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button class="btn btn-primary" type="submit">Submit form</button>
+    </div>
+  </form>
+  </div>
+
+  <script src="/js/admin/createProgram.js"></script>

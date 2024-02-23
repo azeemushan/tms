@@ -23,6 +23,23 @@ model assignments {
   @@index([SessionID], map: "SessionID")
 }
 
+model materials {
+  MaterialID   Int      @id @default(autoincrement())
+  SessionID    Int?
+  Title        String   @db.VarChar(255)
+  DocumentType String   @db.VarChar(255)
+  FilePath     String?  @db.VarChar(255)
+  createdAt    DateTime @default(now())
+
+  @@index([SessionID], map: "SessionID")
+}
+
+model documentType {
+  DocumentTypeID    Int       @id @default(autoincrement())
+  Name              String    @db.VarChar(255)
+  programs          programs[]
+}
+
 model centers {
   CenterID        Int     @id @default(autoincrement())
   Name            String  @db.VarChar(22)
@@ -106,6 +123,7 @@ model programs {
   Description          String?            @db.Text
   EligibilityCriteria  String?            @db.Text
   DocumentRequirements Int?
+  Documents            documentType[]
   trainingsessions     trainingsessions[]
   courses              course[] // Added relationship
   thirdparty           thirdparties?      @relation(fields: [DonorOrganizationID], references: [ThirdPartyID], onDelete: Cascade)

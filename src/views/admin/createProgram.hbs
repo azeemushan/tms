@@ -1,20 +1,8 @@
-{{!< dashboard}}
-<div class="container">
-  <form
-    action="/admin/program/create"
-    method="post"
-    class="row g-3 needs-validation"
-    novalidate
-  >
+{{!< dashboard}} <div class="container">
+  <form action="/admin/program/create" method="post" class="row g-3 needs-validation" novalidate>
     <div class="col-md-6">
       <label for="validationCustom01" class="form-label">Name</label>
-      <input
-        type="text"
-        name="Name"
-        class="form-control"
-        id="validationCustom01"
-        required
-      />
+      <input type="text" name="Name" class="form-control" id="validationCustom01" required />
       <div class="valid-feedback">
         Looks good!
       </div>
@@ -22,15 +10,10 @@
     {{! donor organization }}
     <div class="col-md-6">
       <label for="validationCustom04" class="form-label">Donor Organization</label>
-      <select
-        class="form-select"
-        name="DonorOrganization"
-        id="validationCustom04"
-        required
-      >
+      <select class="form-select" name="DonorOrganization" id="validationCustom04" required>
         <option selected disabled value="">Choose...</option>
         {{#each donors}}
-          <option value="{{this.ThirdPartyID}}">{{this.Name}}</option>
+        <option value="{{this.ThirdPartyID}}">{{this.Name}}</option>
         {{/each}}
       </select>
       <div class="invalid-feedback">
@@ -40,14 +23,8 @@
     {{! start date }}
     <div class="col-md-6">
       <label for="validationCustom02" class="form-label">Start Date</label>
-      <input
-        type="date"
-        name="StartDate"
-        class="form-control"
-        id="validationCustom02"
-        value="{{session.StartDate}}"
-        required
-      />
+      <input type="date" name="StartDate" class="form-control" id="validationCustom02" value="{{session.StartDate}}"
+        required />
       <div class="valid-feedback">
         Looks good!
       </div>
@@ -55,27 +32,15 @@
     {{! end date }}
     <div class="col-md-6">
       <label for="validationCustom02" class="form-label">End Date</label>
-      <input
-        type="date"
-        name="EndDate"
-        class="form-control"
-        id="validationCustom02"
-        value="{{session.EndDate}}"
-        required
-      />
+      <input type="date" name="EndDate" class="form-control" id="validationCustom02" value="{{session.EndDate}}"
+        required />
       <div class="valid-feedback">
         Looks good!
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-12">
       <label for="validationCustom03" class="form-label">Description</label>
-      <input
-        type="text"
-        name="Description"
-        class="form-control"
-        id="validationCustom03"
-        required
-      />
+      <input type="text" name="Description" class="form-control" id="validationCustom03" required />
       <div class="invalid-feedback">
         Please provide a valid Description.
       </div>
@@ -83,16 +48,10 @@
     {{! Category }}
     <div class="col-md-6">
       <label for="validationCustom04" class="form-label">Category</label>
-      <select
-        class="form-select"
-        name="Category"
-        id="validationCustom04"
-        required
-      >
+      <select class="form-select" name="Category" id="validationCustom04" required>
         <option selected disabled value="">Choose...</option>
-        <option
-          value="Climate-Resilient Livelihoods and Enterprise development"
-        >Climate-Resilient Livelihoods and Enterprise development </option>
+        <option value="Climate-Resilient Livelihoods and Enterprise development">Climate-Resilient Livelihoods and
+          Enterprise development </option>
         <option value="Youth and gender-based initiatives">Youth and
           gender-based initiatives
         </option>
@@ -109,11 +68,35 @@
         Please select a valid Organization.
       </div>
     </div>
+    {{! manager }}
+    <div class="col-md-6">
+      <label for="validationCustom04" class="form-label">Manager</label>
+      <select class="form-select" name="Manager" id="validationCustom04" required>
+        <option selected disabled value="">Choose...</option>
+        {{#each managers}}
+        <option value={{this.Username}}>{{this.Username}}</option>
+        {{/each}}
 
+
+      </select>
+      <div class="invalid-feedback">
+        Please select a valid Organization.
+      </div>
+    </div>
+    <h5>Documents</h5>
+    <div class="col">
+      {{#each documentType}}
+      <div class="form-check form-switch">
+        <input class="" type="checkbox" id="flexSwitchCheckDefault" name="documentTypes[]"
+          value="{{this.DocumentTypeID}}">
+        <label class="form-check-label" for="flexSwitchCheckDefault">{{this.Name}}</label>
+      </div>
+      {{/each}}
+    </div>
     <div class="col-12">
       <button class="btn btn-primary" type="submit">Submit form</button>
     </div>
   </form>
-</div>
+  </div>
 
-<script src="/js/admin/createProgram.js"></script>
+  <script src="/js/admin/createProgram.js"></script>

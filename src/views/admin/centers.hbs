@@ -32,7 +32,6 @@
           <th>City</th>
           <th>Focal Person</th>
           <th>Seating Capacity</th>
-          <th>Public Sector</th>
           <th>Computer Lab</th>
         </tr>
       </thead>
@@ -46,7 +45,6 @@
           </td>
           <td>{{this.FocalPerson}}</td>
           <td>{{this.SeatingCapacity}}</td>
-          <td>{{this.isPublicSector}}</td>
           <td>{{this.haveComputerLab}}</td>
         </tr>
         {{/each}}
@@ -66,7 +64,7 @@
           <form action="/admin/center/create" method="post" class="row g-3 needs-validation">
             {{! NAme }}
             <div class="col-12">
-              <label for="validationCustom01" class="form-label">Name</label>
+              <label for="validationCustom01" class="form-label">Venue Name</label>
               <input type="text" name="Name" class="form-control" id="validationCustom01" required />
               <div class="valid-feedback">
                 Looks good!
@@ -94,18 +92,6 @@
               <input type="number" name="SeatingCapacity" class="form-control" id="validationCustom02" required />
               <div class="valid-feedback">
                 Looks good!
-              </div>
-            </div>
-            {{! isPublicSector }}
-            <div class="col-md-6">
-              <label for="validationCustom04" class="form-label">Public Sector</label>
-              <select class="form-select" name="isPublicSector" id="validationCustom04" required>
-                <option selected disabled value="">Choose...</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
-              <div class="invalid-feedback">
-                Please select a valid Option.
               </div>
             </div>
             {{! haveComputerLab }}

@@ -610,10 +610,50 @@ router.get("/session/:id/documents", async (req, res) => {
       },
     });
 
-    res.render("admin/documents", {
+    res.render("admin/sessionDocuments", {
       documents,
       session,
     });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/session/:id/materials", async (req, res) => {
+  try {
+    const materials = await prisma.materials.findMany({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    const session = await prisma.trainingsessions.findFirst({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    res.render("admin/trainingMaterial", {
+      materials,
+      session,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/session/:id/materials/create", async (req, res) => {
+  try {
+ const session = await prisma.trainingsessions.findFirst({
+      where: {
+        SessionID: +req.params.id,
+      },
+    });
+
+    res.render("admin/createMaterial", {
+      session,
+    });
+
   } catch (error) {
     res.status(400).json({ error });
   }
@@ -642,6 +682,59 @@ router.get("/session/:id/quizes", async (req, res) => {
       quizes,
       session,
     });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.get("/documents", async (req, res) => {
+  try {
+    const documents = await prisma.documentType.findMany();
+
+    res.render("admin/documents", {
+      documents
+    });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.post("/document/create", async (req, res) => {
+  const {Name} = req.body
+
+  try {
+    const documentExist = await prisma.documentType.findFirst({
+      where: {
+        Name
+      }
+    });
+
+    if (documentExist) {
+      return res.status(400).json({
+        message: `Document ${Name} already exists`
+      })
+    }
+
+    const newDocument = await prisma.documentType.create({
+      data: {
+        Name
+      }
+    })
+    res.redirect("/admin/documents");
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+router.delete("/document/:id", async (req, res) => {
+  try {
+    const document = await prisma.documentType.delete({
+      where: {
+        DocumentTypeID: +req.params.id,
+      },
+    });
+
+    res.status(200).json({ message: "deleted succesfully" });
   } catch (error) {
     res.status(400).json({ error });
   }
@@ -949,16 +1042,25 @@ router.get("/program/create", async (_, res) => {
   try {
     const donors = await prisma.thirdparties.findMany();
 
-    res.render("admin/createProgram", { donors });
+    const managers = await prisma.users.findMany({
+      where: {
+        UserType: UserType.MANAGER
+      }
+    });
+
+    const documentType = await prisma.documentType.findMany()
+
+    res.render("admin/createProgram", { donors, managers, documentType });
   } catch (error) {
     console.log("🚀 ~ router.get ~ error:", error);
   }
 });
 
 router.post("/program/create", async (req, res) => {
-  const { Name, StartDate, EndDate, DonorOrganization, Description, Category } =
+  const { Name, StartDate, EndDate, DonorOrganization, Description, Category,documentTypes } =
     req.body;
 
+    console.log("🚀 ~ router.post ~ endDate:", req.body);   
   try {
     if (
       !Name ||
@@ -973,7 +1075,6 @@ router.post("/program/create", async (req, res) => {
 
     const startDate = new Date(StartDate).toLocaleDateString();
     const endDate = new Date(EndDate).toLocaleDateString();
-    console.log("🚀 ~ router.post ~ endDate:", endDate);
 
     const data = await prisma.programs.create({
       data: {
@@ -983,6 +1084,11 @@ router.post("/program/create", async (req, res) => {
         DonorOrganizationID: +DonorOrganization,
         Description,
         Category,
+        Documents: {
+          connect: documentTypes.map((docTypeId) => ({
+        DocumentTypeID: +docTypeId,
+      })),
+        }
       },
     });
 
@@ -1026,6 +1132,8 @@ router.post("/center/create", async (req, res) => {
       },
     });
 
+    console.log('🚀 ~ router.post ~ data:', data);
+    
     if (!data) return res.status(400).json({ error: "Missing fields" });
     res.redirect("/admin/centers");
   } catch (error) {
