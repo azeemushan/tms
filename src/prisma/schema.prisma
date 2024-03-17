@@ -34,19 +34,12 @@ model materials {
   @@index([SessionID], map: "SessionID")
 }
 
-model documentType {
-  DocumentTypeID    Int       @id @default(autoincrement())
-  Name              String    @db.VarChar(255)
-  programs          programs[]
-}
-
 model centers {
   CenterID        Int     @id @default(autoincrement())
   Name            String  @db.VarChar(22)
   City            String  @db.VarChar(22)
   FocalPerson     String  @db.VarChar(22)
   SeatingCapacity Int
-  isPublicSector  Boolean
   haveComputerLab Boolean
 }
 
@@ -109,6 +102,21 @@ enum Gender {
   BOTH
 }
 
+model documentType {
+  DocumentTypeID    Int       @id @default(autoincrement())
+  Name              String    @db.VarChar(255)
+  programs          documentTypeProgram[]
+}
+
+model documentTypeProgram {
+  DocumentTypeID    Int
+  ProgramID         Int
+  program           programs      @relation(fields: [ProgramID], references: [ProgramID])
+  documentType      documentType  @relation(fields: [DocumentTypeID], references: [DocumentTypeID])
+
+  @@id([DocumentTypeID, ProgramID])
+}
+
 model programs {
   ProgramID            Int                @id @default(autoincrement())
   Name                 String             @db.VarChar(255)
@@ -123,7 +131,7 @@ model programs {
   Description          String?            @db.Text
   EligibilityCriteria  String?            @db.Text
   DocumentRequirements Int?
-  Documents            documentType[]
+  Documents            documentTypeProgram[]
   trainingsessions     trainingsessions[]
   courses              course[] // Added relationship
   thirdparty           thirdparties?      @relation(fields: [DonorOrganizationID], references: [ThirdPartyID], onDelete: Cascade)
@@ -272,8 +280,9 @@ model users {
   Password                                           String             @db.VarChar(255)
   Email                                              String             @db.VarChar(255)
   FirstName                                          String?            @db.VarChar(255)
-  ProgramID                                          String?            @db.VarChar(255)
+  userData                                          String?            @db.VarChar(255)
   SessionID                                          String?            @db.VarChar(255)
+  ProgramID                                          String?            @db.VarChar(255)
   LastName                                           String?            @db.VarChar(255)
   ProfilePicture                                     String?            @db.VarChar(255)
   ContactNumber                                      String?            @db.VarChar(255)

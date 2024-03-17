@@ -27,14 +27,22 @@ router.post("/create", async (req, res) => {
       },
     });
 
+    const program = await prisma.trainingsessions.findFirst({
+      where: {
+        SessionID: +sessionId,
+      }
+    })
 
 let hashedPassword = await hash(cnic, 10);
+
     await prisma.users.create({
       data: {
         Username: name,
         Password: hashedPassword,
         Email: email,
         UserType: UserType.STUDENT,
+        SessionID: sessionId,
+        ProgramID: `${program.ProgramID}`
       },
     });
 

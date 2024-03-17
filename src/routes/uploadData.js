@@ -135,7 +135,7 @@ router.post("/upload/documents", async (req, res) => {
         },
       });
 
-      if (file.name === profilePicture.name) {
+      if (profilePicture && file.name === profilePicture.name) {
         await prisma.users.update({
           where: {
             UserID: +ParticipantID,
@@ -148,6 +148,58 @@ router.post("/upload/documents", async (req, res) => {
     }
 
     res.json({ redirectTo: "/student/dashboard" });
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/session/:id/materials/create", async (req, res) => {
+  
+  const id = req.params.id
+
+  // Get the file from the request
+  const files = req.files;
+
+  if (!files) {
+    return res.status(400).json({ error: "No file provided in the request" });
+  }
+
+  try {
+    // Create the program-specific directory if it doesn't exist
+    const materialsDirectory = join(uploadsDirectory, "materials");
+    const sessionDirectory = join(materialsDirectory, `${id}`);
+
+    if (!fs.existsSync(uploadsDirectory)) {
+      fs.mkdirSync(uploadsDirectory, { recursive: true });
+    }
+
+    // Create user directory if it doesn't exist
+    if (!fs.existsSync(materialsDirectory)) {
+      fs.mkdirSync(materialsDirectory, { recursive: true });
+    }
+
+    // Create session directory if it doesn't exist
+    if (!fs.existsSync(sessionDirectory)) {
+      fs.mkdirSync(sessionDirectory, { recursive: true });
+    }
+
+      let file = files.file
+      console.log("🚀 ~ router.post ~ file:", files.file)
+      const FilePath = join(sessionDirectory, file.name);
+      file.mv(FilePath);
+      const path = FilePath.split(process.cwd())[1].replace("\\public", "");
+const title = file.name.split(".")[0]
+      const data = await prisma.materials.create({
+        data: {
+          FilePath: path,
+          SessionID: +id,
+          DocumentType: file.mimetype,
+          Title: title
+        },
+      });
+
+    res.json({ redirectTo: `/admin/session/${id}/materials` });
   } catch (error) {
     console.error("Error uploading file:", error);
     res.status(500).json({ error: "Internal Server Error" });

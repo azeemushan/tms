@@ -18,27 +18,31 @@
   }
 
 </style>
+
 <div class="container">
-  <div class="row gap-4">
-    {{#each documentTypes}}
-    <div class="col-md-6">
-      <label for="validationCustom01" class="form-label">{{this.Name}}</label>
-      <input
-        type="file"
-        name="{{this.Name}}"
-        class="form-control"
-        id="validationCustom01"
-        required
-      />
-      <div class="valid-feedback">
-        Looks good!
-      </div>
-    </div>
-    {{/each}}
-    <div class="col-12">
-      <button class="btn btn-primary" id="uploadButton">Submit form</button>
-    </div>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Download</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each materials}}
+        <tr>
+          <td>{{this.MaterialID}}</td>
+          <td>{{this.Title}}</td>
+          <td>{{this.DocumentType}}</td>
+          <td><a
+              class="upload-btn"
+              href='{{this.FilePath}}'
+            >Download</a></td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
 </div>
+
 <script src="/js/student/dashboard.js"></script>
-<script src="/js/student/uploadDocuments.js"></script>

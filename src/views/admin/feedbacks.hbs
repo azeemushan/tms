@@ -4,78 +4,32 @@
 
 <style>
   /* Additional styles specific to the Programs section */ .programs-container {
-  display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; } .program-card {
-  background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px
-  8px rgba(0, 0, 0, 0.1); width: 300px; } .program-card h3 { color: #2E5A92; }
-  .add-button { background-color: #2E5A92; color: #fff; padding: 10px 15px;
-  border: none; border-radius: 5px; cursor: pointer; margin-left: 20px; }
-  .add-button:hover { background-color: #2E5ABB; }
+  display: flex; flex-wrap: wrap; gap: 20px; padding-block: 20px; }
+  .program-card { border: 2px solid rgba(46, 90, 146,0.3); background-color:
+  #f7f7f7; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width:
+  200px;height: 150px; display: flex; flex-direction:column;justify-content:
+  space-between; overflow: hidden; } .program-card h3 { color: #2E5A92; }
+  .program-card p { color: white; font-weight: 500 } .add-button {
+  background-color: #2E5A92; color: #fff; padding: 10px 15px; border: none;
+  border-radius: 5px; cursor: pointer; } .add-button:hover { background-color:
+  #2E5ABB; } .card-upper { padding: 15px; display: flex;justify-content:
+  center;align-items: center; flex:1;} .card-lower { padding-inline: 15px;
+  background: #2E5A92; color: white; display: flex;height: 30px;
+  justify-content: center; }
 </style>
 <div class="content">
-  <button
-    class="add-button"
-    data-bs-toggle="modal"
-    data-bs-target="#addSession"
-  >Add Feedback</button>
+  
   <div class="programs-container">
-    <!-- Feedback cards will be dynamically added here -->
+    {{#each programs}}
+      <a
+        href="/admin/feedbacks/program/{{this.ProgramID}}"
+        style="text-decoration: none;"
+      >
+        <div class="program-card">
+          <div class="card-upper"><h3>{{this.Name}}</h3></div>
+          <div class="card-lower"><p>Donor: {{this.thirdparty.Name}}</p></div>
+        </div></a>
+    {{/each}}
   </div>
 </div>
 
-<!-- Modal for adding/editing programs (can be hidden by default) -->
-<div id="programModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeProgramModal()">&times;</span>
-    <!-- Form for adding/editing programs goes here -->
-  </div>
-</div>
-{{! create session modal }}
-<div
-  class="modal fade"
-  id="addSession"
-  tabindex="-1"
-  aria-labelledby="addSession"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Add Feedback</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <div id="inputContainer">
-          {{! course }}
-          <div class="col-12">
-            <input
-              type="text"
-              name="Name"
-              class="form-control"
-              id="validationCustom01"
-              required
-            />
-            <div class="valid-feedback">
-              Looks good!
-            </div>
-          </div>
-        </div>
-        <div class="col-12 mt-4">
-          <button class="btn btn-primary" type="button" onclick="addInput()">Add
-            Another</button>
-          <button
-            class="btn btn-primary"
-            type="button"
-            onclick="submitFeedback()"
-          >Submit form</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Include JavaScript files -->
-<script src="/js/admin/feedback.js"></script>

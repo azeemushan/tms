@@ -1,103 +1,151 @@
-{{!< dashboard}}
-<style>
-        .container {
-            display: flex;
-        }
+{{!< dashboard}} <style>
+  .container {
+  display: flex;
+  }
 
 
-        .main-content {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
+  .main-content {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  }
 
-        table {
-            table-layout: fixed;
-            border-collapse: collapse;
-        }
+  table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  }
 
-        th, td {
-            padding: 15px;
-            text-align: left;
-            font-size: 16px;
-        }
+  th, td {
+  padding: 15px;
+  text-align: left;
+  font-size: 16px;
+  }
 
-        th {
-            background-color: #2E5A92;
-            color: #fff;
-        }
+  th {
+  background-color: #2E5A92;
+  color: #fff;
+  }
 
-        table, th, td {
-            width: 1fr;
-            text-align: center;
-        }
+  table, th, td {
+  width: 1fr;
+  text-align: center;
+  }
 
-        table tbody tr {
-            background-color: white;
-        }
+  table tbody tr {
+  background-color: white;
+  }
 
-        table tbody tr:nth-child(odd) {
-            background-color: #f2f2f2;
-        }
+  table tbody tr:nth-child(odd) {
+  background-color: #f2f2f2;
+  }
 
-        table thead th {
-            border: none;
-        }
+  table thead th {
+  border: none;
+  }
 
-        .grade-input {
-            width: 80px;
-            padding: 5px;
-            font-size: 16px;
-        }
+  .grade-input {
+  width: 80px;
+  padding: 5px;
+  font-size: 16px;
+  }
 
-        .download-btn {
-            background-color: #2E5A92;
-            color: white;
-            border: 1px solid white;
-            border-radius: 4px;
-            cursor: pointer;
-            padding: 2px;
-        }
+  .download-btn {
+  background-color: #2E5A92;
+  color: white;
+  border: 1px solid white;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px;
+  }
 
-        .download-btn:hover {
-            background-color: white;
-            color: #2E5A92;
-        }
-</style>
-        <div class="container mt-4">
-            <table id="participantTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Student</th>
-                        <th>Program</th>
-                        <th>Session</th>
-                        <th>Assignment</th>
-                        <th>Submission</th>
-                        <th>File</th>
-                        <th>Trainer</th>
-                        <th>Marks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each assignments}}
-                      <tr> 
-                                <td>{{this.AssignmentID}}</td>
-                                <td>{{this.ParticipantID}}</td>
-                                <td>{{this.program}}</td>
-                                <td>{{this.SessionID}}</td>
-                                <td>{{this.Title}}</td>
-                                <td>{{this.Deadline}}</td>
-                                <td><a download="true" class="download-btn" href='{{this.FilePath}}'>Download</a></td>
-                                <td>{{this.trainingsessions.TrainerID}}</td>
-                                <td>{{this.Grade}}</td>
-                            </tr>
-                    {{/each}}
-            </tbody>
-        </table>
+  .download-btn:hover {
+  background-color: white;
+  color: #2E5A92;
+  }
+  .add-button { padding: 10px
+  15px; border: none; border-radius: 5px; cursor: pointer; margin-left:
+  100px; /* Add margin-left for space from the left */ }
+  </style>
+  <button class="add-button" data-bs-toggle="modal" data-bs-target="#addProgram">Add Assignment</button>
+  <div class="container mt-4">
+    <table id="participantTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Student</th>
+          <th>Program</th>
+          <th>Session</th>
+          <th>Assignment</th>
+          <th>Submission</th>
+          <th>File</th>
+          <th>Trainer</th>
+          <th>Marks</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each assignments}}
+        <tr>
+          <td>{{this.AssignmentID}}</td>
+          <td>{{this.ParticipantID}}</td>
+          <td>{{this.program}}</td>
+          <td>{{this.SessionID}}</td>
+          <td>{{this.Title}}</td>
+          <td>{{this.Deadline}}</td>
+          <td><a download="true" class="download-btn" href='{{this.FilePath}}'>Download</a></td>
+          <td>{{this.trainingsessions.TrainerID}}</td>
+          <td>{{this.Grade}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  </div>
+  <div class="modal fade" id="addProgram" tabindex="-1" aria-labelledby="addProgram" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add Assignment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3 needs-validation" novalidate>
+            <input type="hidden" name="SessionID" class="form-control" id="sessionInput"
+              value="{{session.SessionID}}" />
+            {{! title }}
+            <div class="col-12">
+              <label for="validationCustom03" class="form-label">Title</label>
+              <input type="text" name="Title" class="form-control" id="titleInput" required />
+              <div class="invalid-feedback">
+                Please provide a valid Crieteria.
+              </div>
+            </div>
+            {{! file }}
+            <div class="col-12">
+              <label for="validationCustom03" class="form-label">Template</label>
+              <input type="file" name="template" class="form-control" id="fileInput" required />
+              <div class="invalid-feedback">
+                Please provide a valid Crieteria.
+              </div>
+            </div>
+            {{! deadline }}
+            <div class="col-12">
+              <label for="validationCustom03" class="form-label">Deadline</label>
+              <input type="date" name="Deadline" class="form-control" id="deadlineInput" required />
+              <div class="invalid-feedback">
+                Please provide a valid Requirements.
+              </div>
+            </div>
+
+            <div class="col-12">
+              <button class="btn btn-primary" id="uploadButton" type="button">Create Assignment</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+  <script>
+    new DataTable('#participantTable');
+  </script>
 
-<script>
-  new DataTable('#participantTable');
-</script>
+  <script src="/js/createAssignment.js"></script>

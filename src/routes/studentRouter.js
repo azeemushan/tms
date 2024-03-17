@@ -17,13 +17,45 @@ router.get("/dashboard", async (req, res) => {
 
 router.get("/documents", async (req, res) => {
   try {
-    const assignments = await prisma.assignments.findMany({
-      where: {
-        isUploadedByTrainer: true,
+    const {token} = req.cookies
+    const userData = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("userData",userData);
+
+    
+    const programWithDocumentTypes = await prisma.programs.findUnique({
+      where: { ProgramID: +userData.ProgramID },
+      include: {
+        Documents: {
+          include: {
+            documentType: true,
+          },
+        },
       },
     });
-    res.render("student/documents", { assignments });
-  } catch (error) {}
+    
+    // Extract document types from the result
+    const documentTypes = programWithDocumentTypes?.Documents.map((doc) => doc.documentType) || [];
+    console.log("documentTypes",documentTypes);
+    
+    res.render("student/documents", {documentTypes});
+  } catch (error) {
+    console.log("student documents error",error);
+  }
+});
+router.get("/materials", async (req, res) => {
+  try {
+    const {token} = req.cookies
+    const userData = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("userData",userData);
+
+    const materials = await prisma.materials.findMany({
+      where: { SessionID: +userData.SessionID },
+    });
+    
+    res.render("student/materials", {materials});
+  } catch (error) {
+    console.log("student documents error",error);
+  }
 });
 
 router.get("/profile", async (req, res) => {
@@ -45,6 +77,14 @@ router.get("/profile", async (req, res) => {
 
 router.get("/feedbacks", async (req, res) => {
   try {
+    const { token } = req.cookies;
+
+    const userData = jwt.verify(token, process.env.JWT_SECRET);
+    const program = await prisma.programs.findFirst({
+      where: {
+        ProgramID: +userData.ProgramID
+      }
+    })
     const feedbacks = await prisma.Feedback.findMany({
       where: {
         CreatedByAdmin: true,
@@ -53,8 +93,11 @@ router.get("/feedbacks", async (req, res) => {
         Inputs: true,
       },
     });
-    console.log("🚀 ~ router.get ~ feedbacks:", feedbacks);
-    res.render("student/feedbacks", { feedbacks });
+    const feedbacksWithProgram = feedbacks.map(feedback => ({
+      ...feedback,ProgramName: program.Name
+    }));
+    console.log("🚀 ~ router.get ~ feedbacks:", feedbacksWithProgram);
+    res.render("student/feedbacks", { feedbacks:feedbacksWithProgram });
   } catch (error) {
     console.log("🚀 ~ router.get ~ error:", error);
   }
@@ -62,33 +105,37 @@ router.get("/feedbacks", async (req, res) => {
 
 router.post("/feedback/create", async (req, res) => {
   try {
+    let {token } = req.cookies
+
+    const userData = jwt.verify(token, process.env.JWT_SECRET);
+
     const inputs = req.body;
     console.log("🚀 ~ router.post ~ inputs:", inputs);
 
     const newFeedback = await prisma.Feedback.create({
       data: {
         CreatedByAdmin: false,
+        ProgramID: userData.ProgramID,
       },
     });
 
-    const feedbackInputs = Object.entries(inputs).map(async ([name, value]) => {
+    const feedbackInputs = inputs.map(async (input) => {
       return prisma.FeedbackInput.create({
         data: {
-          Name: name,
-          Value: value,
+          Name: input.inputName,
+          Value: input.inputValue,
           feedbackID: newFeedback.FeedbackID,
         },
       });
     });
 
-    // console.log("🚀 ~ router.get ~ feedbacks:", feedbacks);
-    res.redirect("/student/feedbacks");
+    res.status(200)
   } catch (error) {
     console.log("🚀 ~ router.get ~ error:", error);
   }
 });
 
-router.get("/feedback/:id", async (req, res) => {
+router.get("/feedback/data/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const feedback = await prisma.Feedback.findFirst({
@@ -100,7 +147,14 @@ router.get("/feedback/:id", async (req, res) => {
       },
     });
     console.log("🚀 ~ router.get ~ feedback:", feedback);
-    res.render("student/singleFeedback", { feedback });
+    res.status(200).json({ feedback });
+  } catch (error) {
+    console.log("🚀 ~ router.get ~ error:", error);
+  }
+});
+router.get("/feedback/:id", async (req, res) => {
+  try {
+    res.render("student/singleFeedback");
   } catch (error) {
     console.log("🚀 ~ router.get ~ error:", error);
   }

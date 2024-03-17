@@ -9,6 +9,7 @@ if (!values) {
 
 function uploadFile(fileInput) {
   const files = [];
+  console.log("fileInputs",fileInputs)
   fileInputs.forEach((item) => {
     if (item.files[0]) {
       const fileObject = {
@@ -18,6 +19,7 @@ function uploadFile(fileInput) {
       files.push(fileObject);
     }
   });
+  console.log("fileInputs",files)
 
   if (!!files.length) {
     const formData = new FormData();

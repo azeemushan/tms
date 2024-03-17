@@ -1,6 +1,4 @@
-{{!< studentDashboard}}
-
-<style>
+{{!< studentDashboard}} <style>
 
   body { font-family: 'Poppins', sans-serif; background-color: #fff; color:
   #000; } .container { display: flex; justify-content: center; } table { width:
@@ -17,32 +15,32 @@
   td:nth-child(3) { width: 20%; } th:nth-child(4), td:nth-child(4) { width: 20%;
   }
 
-</style>
+  </style>
 
-<div class="container">
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Assignment Title</th>
-        <th>Deadline</th>
-        <th>Upload</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each assignments}}
+  <div class="container">
+    <table>
+      <thead>
         <tr>
-          <td>{{this.AssignmentID}}</td>
-          <td>{{this.Title}}</td>
-          <td>{{this.Deadline}}</td>
-          <td><button
-              class="upload-btn"
-              onclick="location.href='upload/?title={{this.Title}}'"
-            >Upload</button></td>
+          <th>#</th>
+          <th>Assignment Title</th>
+          <th>Deadline</th>
+          <th>Template</th>
+          <th>Upload</th>
         </tr>
-      {{/each}}
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        {{#each assignments}}
+        <td>{{this.AssignmentID}}</td>
+        <td>{{this.Title}}</td>
+        <td>{{this.Deadline}}</td>
+        <td><a class="upload-btn" href="{{this.FilePath}}" download>Download</a>
+        </td>
 
-<script src="/js/student/dashboard.js"></script>
+        <td><button class="upload-btn" onclick="location.href='upload/?title={{this.Title}}'">Upload</button></td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <script src="/js/student/dashboard.js"></script>

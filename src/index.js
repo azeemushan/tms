@@ -52,7 +52,6 @@ app.use(express.static("public"));
 app.engine(
   "hbs",
   hbs.express4({
-    partialsDir: __dirname + "/views/partials",
     layoutsDir: __dirname + "/views/layouts",
   })
 );
@@ -155,6 +154,50 @@ app.post("/user/create", async (req, res) => {
   }
 });
 
+app.post("/admin/:id/assignment/create", async (req, res) => {
+  try {
+    const { title, deadline } = req.body;
+    const {file} = req.files
+    const SessionID = +req.params.id;
+  console.log("🚀 ~ app.post ~ file:", file.name)
+  const uploadsDirectory = join(process.cwd(), "public", "uploads");
+
+  const sessionDirectory = join(uploadsDirectory, `${SessionID}`);
+  if (!file  || !title || !deadline) {
+    return res.status(400).json({ error: "Missing Fields" });
+  }
+if (!fs.existsSync(uploadsDirectory)) {
+      fs.mkdirSync(uploadsDirectory, { recursive: true });
+    }
+
+    // Create session directory if it doesn't exist
+    if (!fs.existsSync(sessionDirectory)) {
+      fs.mkdirSync(sessionDirectory, { recursive: true });
+    }
+
+    const FilePath = join(sessionDirectory, file.name);
+      file.mv(FilePath);
+      const path = FilePath.split(process.cwd())[1].replace("\\public", "");
+  const Deadline = new Date(deadline).toLocaleDateString();
+
+  const created = await prisma.assignments.create({
+    data: {
+      Title: title,
+      SessionID,
+      Deadline,
+      isUploadedByTrainer: true,
+      FilePath: path
+    },
+  });
+
+  return res.status(200).json({
+    success: true
+  });
+  } catch (error) {
+    console.log("🚀 ~ app.post ~ error:", error)
+    res.status(500).json({ error });
+  }
+});
 app.post("/:id/assignment/create", async (req, res) => {
   const { Title, Deadline } = req.body;
   const deadline = new Date(Deadline).toLocaleDateString();
