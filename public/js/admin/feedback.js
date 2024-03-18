@@ -1,7 +1,7 @@
 function addInput() {
   var container = document.getElementById("inputContainer");
   var newDiv = document.createElement("div");
-  newDiv.className = "col-12 mt-2";
+  newDiv.className = "col-12 mt-2 pt-2 border-top";
   newDiv.id = "singleInput"
 
   newDiv.innerHTML = `
