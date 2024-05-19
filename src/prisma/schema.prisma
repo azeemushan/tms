@@ -103,44 +103,45 @@ enum Gender {
 }
 
 model documentType {
-  DocumentTypeID    Int       @id @default(autoincrement())
-  Name              String    @db.VarChar(255)
-  programs          documentTypeProgram[]
+  DocumentTypeID Int                   @id @default(autoincrement())
+  Name           String                @db.VarChar(255)
+  programs       documentTypeProgram[]
 }
 
 model documentTypeProgram {
-  DocumentTypeID    Int
-  ProgramID         Int
-  program           programs      @relation(fields: [ProgramID], references: [ProgramID])
-  documentType      documentType  @relation(fields: [DocumentTypeID], references: [DocumentTypeID])
+  DocumentTypeID Int
+  ProgramID      Int
+  program        programs     @relation(fields: [ProgramID], references: [ProgramID])
+  documentType   documentType @relation(fields: [DocumentTypeID], references: [DocumentTypeID])
 
   @@id([DocumentTypeID, ProgramID])
 }
 
 model programs {
-  ProgramID            Int                @id @default(autoincrement())
-  Name                 String             @db.VarChar(255)
+  ProgramID            Int                   @id @default(autoincrement())
+  Name                 String                @db.VarChar(255)
   Startdate            String
   EndDate              String
   Category             String
   ManagerID            Int?
   Age                  String?
   Education            String?
-  Gender               Gender?            @default(BOTH)
+  Gender               Gender?               @default(BOTH)
   DonorOrganizationID  Int?
-  Description          String?            @db.Text
-  EligibilityCriteria  String?            @db.Text
+  Description          String?               @db.Text
+  EligibilityCriteria  String?               @db.Text
   DocumentRequirements Int?
   Documents            documentTypeProgram[]
   trainingsessions     trainingsessions[]
   courses              course[] // Added relationship
-  thirdparty           thirdparties?      @relation(fields: [DonorOrganizationID], references: [ThirdPartyID], onDelete: Cascade)
+  thirdparty           thirdparties?         @relation(fields: [DonorOrganizationID], references: [ThirdPartyID], onDelete: Cascade)
 }
 
 model report {
   ReportID        Int              @id @default(autoincrement())
   Name            String
   ProgramID       Int
+  FilePath        String
   SubmitedReports submitedReport[]
 }
 
@@ -280,7 +281,7 @@ model users {
   Password                                           String             @db.VarChar(255)
   Email                                              String             @db.VarChar(255)
   FirstName                                          String?            @db.VarChar(255)
-  userData                                          String?            @db.VarChar(255)
+  userData                                           String?            @db.VarChar(255)
   SessionID                                          String?            @db.VarChar(255)
   ProgramID                                          String?            @db.VarChar(255)
   LastName                                           String?            @db.VarChar(255)

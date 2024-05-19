@@ -1,5 +1,7 @@
 import { Router } from "express";
+import fs from "fs";
 import jwt from "jsonwebtoken";
+import { join } from "path";
 
 import prisma from "../lib/db.js";
 import { formatDate } from "../lib/util.js";
@@ -229,23 +231,43 @@ router.get("/reports/:id/create", async (req, res) => {
 router.post("/reports/:id/create", async (req, res) => {
   try {
     const { id } = req.params;
-    const { SessionID, Value } = req.body;
+    const { SessionID } = req.body;
+    const {file} = req.files;
+
+    console.log("🚀 ~ router.post ~ SessionID:", file)
+
+    const uploadsDirectory = join(process.cwd(), "public", "uploads");
 
     // Check if the report with the given ID exists
     const existingReport = await prisma.report.findUnique({
       where: { ReportID: +id },
     });
 
-    if (!existingReport || !Value || !SessionID) {
+    if (!existingReport) {
       return res.status(404).json({ error: "Report not found" });
     }
 
+
+  const sessionDirectory = join(uploadsDirectory, `${SessionID}`);
+
+if (!fs.existsSync(uploadsDirectory)) {
+      fs.mkdirSync(uploadsDirectory, { recursive: true });
+    }
+
+    // Create session directory if it doesn't exist
+    if (!fs.existsSync(sessionDirectory)) {
+      fs.mkdirSync(sessionDirectory, { recursive: true });
+    }
+
+    const FilePath = join(sessionDirectory, file.name);
+      file.mv(FilePath);
+      const path = FilePath.split(process.cwd())[1].replace("\\public", "");
     // Create and save the submitted report
     const submittedReport = await prisma.submitedReport.create({
       data: {
         ReportID: +existingReport.ReportID,
         SessionID: +SessionID,
-        Value: Value,
+        Value: path,
       },
     });
 

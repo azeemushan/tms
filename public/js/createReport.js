@@ -1,8 +1,7 @@
 const uploadButton = document.getElementById("uploadButton");
 const fileInput = document.getElementById("fileInput");
-const sessionInput = document.getElementById("sessionInput");
+const ProgramID = document.getElementById("ProgramID");
 const titleInput = document.getElementById("titleInput");
-const deadlineInput = document.getElementById("deadlineInput");
 const data = localStorage.getItem("user");
 const user = JSON.parse(data);
 if (!data) {
@@ -12,15 +11,13 @@ if (!data) {
 function uploadFile(files) {
   const file = files[0];
   const title = titleInput.value
-  const deadline = deadlineInput.value
 
-  if (file && title && deadline) {
+  if (file && title ) {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("title", title);
-    formData.append("deadline", deadline);
+    formData.append("Name", title);
 
-    fetch(`/admin/${sessionInput.value}/assignment/create`, {
+    fetch(`/reports/${ProgramID.value}/create`, {
       method: "POST",
       body: formData,
     })
@@ -31,7 +28,7 @@ function uploadFile(files) {
         return response.json();
       })
       .then((data) => {
-          location.reload();
+          location.href = `http://localhost:5000/admin/reports/${ProgramID.value}`
       })
       .catch((error) => {
         console.error("Error:", error);

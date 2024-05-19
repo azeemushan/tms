@@ -238,12 +238,33 @@ app.get("/quiz", (_, res) => {
 });
 app.post("/reports/:id/create", async (req, res) => {
   const { Name } = req.body;
-  console.log("🚀 ~ router.post ~ Name:", Name);
+  const {file} = req.files
+    const ProgramID = +req.params.id;
+  console.log("🚀 ~ app.post ~ file:", file.name)
+  const uploadsDirectory = join(process.cwd(), "public", "uploads");
+
+  const programDirectory = join(uploadsDirectory, `${ProgramID}`);
+  if (!file  || !Name ) {
+    return res.status(400).json({ error: "Missing Fields" });
+  }
+if (!fs.existsSync(uploadsDirectory)) {
+      fs.mkdirSync(uploadsDirectory, { recursive: true });
+    }
+
+    // Create session directory if it doesn't exist
+    if (!fs.existsSync(programDirectory)) {
+      fs.mkdirSync(programDirectory, { recursive: true });
+    }
+
+    const FilePath = join(programDirectory, file.name);
+      file.mv(FilePath);
+      const path = FilePath.split(process.cwd())[1].replace("\\public", "");
   try {
     const report = await prisma.report.create({
       data: {
         Name,
         ProgramID: +req.params.id,
+        FilePath: path
       },
     });
     res.redirect(`/admin/reports/${req.params.id}`);
